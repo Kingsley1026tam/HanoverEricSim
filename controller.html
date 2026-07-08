@@ -3,316 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hanover Modern Controller</title>
+    <title>Hanover Controller</title>
     <style>
         :root {
-            --bg: #090a0c;
-            --panel: #16191f;
-            --lcd-bg: #98e820;
-            --dot-off: rgba(0, 0, 0, 0.08);
-            --dot-on: #111a00;
-            --btn-bg: #22262f;
-            --btn-hover: #2d333e;
-            --btn-text: #ffffff;
-            --btn-subtext: #6b7280;
-            --btn-action: #3b82f6;
-            --btn-send: #10b981;
-            --btn-danger: #ef4444;
+            --bg: #090a0c; --panel: #16191f; --lcd-bg: #98e820;
+            --dot-off: rgba(0,0,0,0.08); --dot-on: #111a00;
         }
-
-        body {
-            background: var(--bg);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-            overscroll-behavior: none;
-        }
-
-        .controller {
-            background: var(--panel);
-            padding: 24px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            width: 320px;
-        }
-
-        .lcd-wrapper {
-            background: #000;
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-        }
-
-        .lcd {
-            display: grid;
-            grid-template-columns: repeat(84, 1fr);
-            grid-template-rows: repeat(31, 1fr);
-            gap: 1px;
-            background: var(--lcd-bg);
-            padding: 4px;
-            border-radius: 4px;
-            width: 252px;
-            height: 93px;
-        }
-
-        .dot {
-            background: var(--dot-off);
-            border-radius: 50%;
-        }
-
-        .dot.on {
-            background: var(--dot-on);
-            box-shadow: 0 0 2px rgba(0,0,0,0.3);
-        }
-
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        button {
-            background: var(--btn-bg);
-            border: none;
-            border-radius: 12px;
-            height: 56px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.1s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            touch-action: manipulation; /* Prevents double-tap to zoom */
-        }
-
-        button:active {
-            transform: scale(0.92);
-        }
-
-        .key-main {
-            color: var(--btn-text);
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1;
-            pointer-events: none;
-        }
-
-        .key-sub {
-            color: var(--btn-subtext);
-            font-size: 10px;
-            margin-top: 4px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            pointer-events: none;
-        }
-
-        .btn-action {
-            background: var(--btn-action);
-            color: white;
-        }
-        
-        .btn-action .key-main {
-            color: white;
-            font-size: 14px;
-        }
-
-        .btn-danger {
-            background: var(--btn-danger);
-        }
-
-        .btn-send {
-            background: var(--btn-send);
-            grid-column: span 2;
-        }
-        
-        .btn-send .key-main {
-            font-size: 16px;
-            letter-spacing: 1px;
-        }
-
+        body { background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        .controller { background: var(--panel); padding: 20px; border-radius: 20px; width: 300px; display: flex; flex-direction: column; gap: 15px; }
+        .lcd { width: 252px; height: 93px; background: var(--lcd-bg); display: grid; grid-template-columns: repeat(84, 1fr); grid-template-rows: repeat(31, 1fr); gap: 1px; padding: 4px; border-radius: 4px; margin: 0 auto; }
+        .dot { background: var(--dot-off); border-radius: 50%; }
+        .dot.on { background: var(--dot-on); }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #222; color: #fff; font-size: 18px; text-transform: uppercase; box-sizing: border-box; }
+        .btn-enter { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #10b981; color: #fff; font-weight: bold; cursor: pointer; }
+        #suggestions { color: #555; font-size: 14px; height: 20px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="controller">
-        <div class="lcd-wrapper">
-            <div id="lcd" class="lcd"></div>
-        </div>
+<div class="controller">
+    <div id="lcd" class="lcd"></div>
+    <input type="text" id="routeInput" placeholder="ENTER CODE..." oninput="update()">
+    <button class="btn-enter" onclick="confirm()">ENTER</button>
+    <div id="suggestions"></div>
+</div>
 
-        <div class="keypad">
-            <button onclick="pressKey('1')">
-                <span class="key-main">1</span>
-                <span class="key-sub">ABC</span>
-            </button>
-            <button onclick="pressKey('2')">
-                <span class="key-main">2</span>
-                <span class="key-sub">DEF</span>
-            </button>
-            <button onclick="pressKey('3')">
-                <span class="key-main">3</span>
-                <span class="key-sub">GHI</span>
-            </button>
-            <button class="btn-action btn-danger" onclick="clearBuffer()">
-                <span class="key-main">CLR</span>
-            </button>
+<script>
+    const routes = ["A1", "B2", "C3", "D4", "E5", "F6", "G7", "H8", "I9", "K10", "N100", "P200"];
+    const lcd = document.getElementById('lcd');
+    for (let i = 0; i < 84 * 31; i++) lcd.appendChild(document.createElement('div')).className = 'dot';
 
-            <button onclick="pressKey('4')">
-                <span class="key-main">4</span>
-                <span class="key-sub">JKL</span>
-            </button>
-            <button onclick="pressKey('5')">
-                <span class="key-main">5</span>
-                <span class="key-sub">MNO</span>
-            </button>
-            <button onclick="pressKey('6')">
-                <span class="key-main">6</span>
-                <span class="key-sub">PQR</span>
-            </button>
-            <button class="btn-action" onclick="backspace()">
-                <span class="key-main">DEL</span>
-            </button>
+    function update() {
+        let val = document.getElementById('routeInput').value.toUpperCase();
+        document.getElementById('routeInput').value = val;
+        const match = routes.find(r => r.startsWith(val) && val !== "");
+        document.getElementById('suggestions').innerText = match ? "AVAILABLE: " + match : "";
+        render(val);
+    }
 
-            <button onclick="pressKey('7')">
-                <span class="key-main">7</span>
-                <span class="key-sub">STU</span>
-            </button>
-            <button onclick="pressKey('8')">
-                <span class="key-main">8</span>
-                <span class="key-sub">VWX</span>
-            </button>
-            <button onclick="pressKey('9')">
-                <span class="key-main">9</span>
-                <span class="key-sub">YZ</span>
-            </button>
-            <button class="btn-action" onclick="pressDir('X')">
-                <span class="key-main">X</span>
-            </button>
-
-            <button class="btn-action" onclick="pressDir('Y')">
-                <span class="key-main">Y</span>
-            </button>
-            <button onclick="pressKey('0')">
-                <span class="key-main">0</span>
-            </button>
-            <button class="btn-action btn-send" onclick="send()">
-                <span class="key-main">SEND</span>
-            </button>
-        </div>
-    </div>
-
-    <script>
-        const lcd = document.getElementById('lcd');
-        for (let i = 0; i < 84 * 31; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'dot';
-            lcd.appendChild(dot);
+    function confirm() {
+        let val = document.getElementById('routeInput').value;
+        if(val) {
+            localStorage.setItem('hanover_command', val);
+            render("SENT");
+            setTimeout(() => render(val), 1000);
         }
+    }
 
-        const font5x7 = {
-            '0': [0x3e,0x51,0x49,0x45,0x3e], '1': [0x00,0x42,0x7f,0x40,0x00], '2': [0x42,0x61,0x51,0x49,0x46],
-            '3': [0x21,0x41,0x45,0x4b,0x31], '4': [0x18,0x14,0x12,0x7f,0x10], '5': [0x27,0x45,0x45,0x45,0x39],
-            '6': [0x3c,0x4a,0x49,0x49,0x30], '7': [0x01,0x71,0x09,0x05,0x03], '8': [0x36,0x49,0x49,0x49,0x36],
-            '9': [0x06,0x49,0x49,0x29,0x1e], 'A': [0x7c,0x12,0x11,0x12,0x7c], 'B': [0x7f,0x49,0x49,0x49,0x36],
-            'C': [0x3e,0x41,0x41,0x41,0x22], 'D': [0x7f,0x41,0x41,0x22,0x1c], 'E': [0x7f,0x49,0x49,0x49,0x41],
-            'F': [0x7f,0x09,0x09,0x09,0x01], 'G': [0x3e,0x41,0x49,0x49,0x7a], 'H': [0x7f,0x08,0x08,0x08,0x7f],
-            'I': [0x00,0x41,0x7f,0x41,0x00], 'J': [0x20,0x40,0x41,0x3f,0x01], 'K': [0x7f,0x08,0x14,0x22,0x41],
-            'L': [0x7f,0x40,0x40,0x40,0x40], 'M': [0x7f,0x02,0x0c,0x02,0x7f], 'N': [0x7f,0x04,0x08,0x10,0x7f],
-            'O': [0x3e,0x41,0x41,0x41,0x3e], 'P': [0x7f,0x09,0x09,0x09,0x06], 'Q': [0x3e,0x41,0x51,0x21,0x5e],
-            'R': [0x7f,0x09,0x19,0x29,0x46], 'S': [0x46,0x49,0x49,0x49,0x31], 'T': [0x01,0x01,0x7f,0x01,0x01],
-            'U': [0x3f,0x40,0x40,0x40,0x3f], 'V': [0x1f,0x20,0x40,0x20,0x1f], 'W': [0x3f,0x40,0x38,0x40,0x3f],
-            'X': [0x63,0x14,0x08,0x14,0x63], 'Y': [0x07,0x08,0x70,0x08,0x07], 'Z': [0x61,0x51,0x49,0x45,0x43]
-        };
-
-        const keyMap = { 
-            '1': ['1','A','B','C'], '2': ['2','D','E','F'], '3': ['3','G','H','I'], 
-            '4': ['4','J','K','L'], '5': ['5','M','N','O'], '6': ['6','P','Q','R'], 
-            '7': ['7','S','T','U'], '8': ['8','V','W','X'], '9': ['9','Y','Z'], 
-            '0': ['0'] 
-        };
-
-        let buffer = "";
-        let lastKey = null;
-        let tapIndex = 0;
-        let tapTimeout = null;
-
-        function pressKey(num) {
-            clearTimeout(tapTimeout);
-            if (lastKey === num) {
-                tapIndex = (tapIndex + 1) % keyMap[num].length;
-                buffer = buffer.slice(0, -1) + keyMap[num][tapIndex];
-            } else {
-                tapIndex = 0;
-                lastKey = num;
-                buffer += keyMap[num][tapIndex];
-            }
-            render(buffer);
-            tapTimeout = setTimeout(() => { lastKey = null; }, 1000);
-        }
-
-        function pressDir(dir) {
-            buffer += dir;
-            lastKey = null;
-            render(buffer);
-        }
-
-        function backspace() {
-            buffer = buffer.slice(0, -1);
-            lastKey = null;
-            render(buffer);
-        }
-
-        function clearBuffer() {
-            buffer = "";
-            lastKey = null;
-            render(buffer);
-        }
-
-        function send() {
-            if (!buffer) return;
-            localStorage.setItem('hanover_command', buffer);
-            render("SENDING");
-            
-            setTimeout(() => {
-                render(buffer);
-            }, 800);
-        }
-
-        function render(str) {
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach(d => d.className = 'dot');
-            
-            if (!str) return;
-
-            let startCol = 4;
-            let startRow = 12;
-
-            for (let char of str) {
-                const bitmap = font5x7[char] || [0,0,0,0,0];
+    function render(str) {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach(d => d.className = 'dot');
+        const font = { '0':[0x3e,0x51,0x49,0x45,0x3e], '1':[0x00,0x42,0x7f,0x40,0x00], '2':[0x42,0x61,0x51,0x49,0x46], '3':[0x21,0x41,0x45,0x4b,0x31], '4':[0x18,0x14,0x12,0x7f,0x10], '5':[0x27,0x45,0x45,0x45,0x39], '6':[0x3c,0x4a,0x49,0x49,0x30], '7':[0x01,0x71,0x09,0x05,0x03], '8':[0x36,0x49,0x49,0x49,0x36], '9':[0x06,0x49,0x49,0x29,0x1e], 'A':[0x7c,0x12,0x11,0x12,0x7c], 'B':[0x7f,0x49,0x49,0x49,0x36], 'C':[0x3e,0x41,0x41,0x41,0x22], 'D':[0x7f,0x41,0x41,0x22,0x1c], 'E':[0x7f,0x49,0x49,0x49,0x41], 'F':[0x7f,0x09,0x09,0x09,0x01], 'G':[0x3e,0x41,0x49,0x49,0x7a], 'H':[0x7f,0x08,0x08,0x08,0x7f], 'I':[0x00,0x41,0x7f,0x41,0x00], 'J':[0x20,0x40,0x41,0x3f,0x01], 'K':[0x7f,0x08,0x14,0x22,0x41], 'L':[0x7f,0x40,0x40,0x40,0x40], 'M':[0x7f,0x02,0x0c,0x02,0x7f], 'N':[0x7f,0x04,0x08,0x10,0x7f], 'O':[0x3e,0x41,0x41,0x41,0x3e], 'P':[0x7f,0x09,0x09,0x09,0x06], 'Q':[0x3e,0x41,0x51,0x21,0x5e], 'R':[0x7f,0x09,0x19,0x29,0x46], 'S':[0x46,0x49,0x49,0x49,0x31], 'T':[0x01,0x01,0x7f,0x01,0x01], 'U':[0x3f,0x40,0x40,0x40,0x3f], 'V':[0x1f,0x20,0x40,0x20,0x1f], 'W':[0x3f,0x40,0x38,0x40,0x3f], 'X':[0x63,0x14,0x08,0x14,0x63], 'Y':[0x07,0x08,0x70,0x08,0x07], 'Z':[0x61,0x51,0x49,0x45,0x43], 'S':[0x46,0x49,0x49,0x49,0x31], 'E':[0x7f,0x49,0x49,0x49,0x41], 'N':[0x7f,0x04,0x08,0x10,0x7f], 'T':[0x01,0x01,0x7f,0x01,0x01] };
+        let col = 4, row = 12;
+        for (let char of str) {
+            let map = font[char];
+            if (map) {
                 for (let x = 0; x < 5; x++) {
                     for (let y = 0; y < 7; y++) {
-                        if ((bitmap[x] >> y) & 1) {
-                            let px = startCol + x;
-                            let py = startRow + y;
-                            if (px < 84 && py < 31) {
-                                dots[py * 84 + px].classList.add('on');
-                            }
-                        }
+                        if ((map[x] >> y) & 1) dots[(row + y) * 84 + (col + x)].classList.add('on');
                     }
                 }
-                startCol += 7;
+                col += 7;
             }
         }
-    </script>
+    }
+</script>
 </body>
 </html>
