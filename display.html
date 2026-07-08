@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <title>Hanover 電牌顯示系統</title>
+    <style>
+        body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .matrix { display: grid; grid-template-columns: repeat(480, 1.5px); grid-template-rows: repeat(88, 1.5px); gap: 1.5px; background: #000; transform: scale(0.9); }
+        .led { width: 1.5px; height: 1.5px; background: #111; border-radius: 50%; }
+        .led.on { background: #ffcc00 !important; box-shadow: 0 0 6px #ffcc00; }
+    </style>
+</head>
+<body>
+    <div id="ledMatrix" class="matrix"></div>
+    <script>
+        const ROWS = 88, COLS = 480;
+        const container = document.getElementById('ledMatrix');
+        const leds = [];
+        let currentInterval = null;
+
+        for (let i = 0; i < COLS * ROWS; i++) {
+            const div = document.createElement('div'); div.className = 'led';
+            container.appendChild(div); leds.push(div);
+        }
+
+        async function updateDisplay(route) {
+            if (!route) return;
+            try {
+                const res = await fetch(`data/${route}.txt`);
+                if (!res.ok) return;
+                const data = await res.text();
+                const lines = data.split(/\r?\n/);
+                if (currentInterval) clearInterval(currentInterval);
+                let x = 0;
+                currentInterval = setInterval(() => {
+                    for (let y = 0; y < ROWS; y++) {
+                        const char = (lines[y] || "")[x];
+                        leds[y * COLS + x].className = (char === '0' || char === 'O' || char === 'o') ? 'led on' : 'led';
+                    }
+                    if (++x >= COLS) clearInterval(currentInterval);
+                }, 2);
+            } catch (e) { console.error("渲染失敗:", e); }
+        }
+
+        window.addEventListener('storage', (e) => { if (e.key === 'hanover_command') updateDisplay(e.newValue); });
+        window.onload = () => updateDisplay(localStorage.getItem('hanover_command'));
+    </script>
+</body>
+</html>
